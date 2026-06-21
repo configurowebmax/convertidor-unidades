@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertidor de Unidades Gratis | ConfiguroWeb</title>
+    <meta name="description" content="Convierte unidades de longitud, peso, temperatura, area y volumen gratis. Metrico e imperial en una sola herramienta.">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <span class="text-xl font-bold text-indigo-600">Configuro<span class="text-slate-900">Web</span></span>
+            <a href="https://configuroweb.com/tag/gratis" class="text-sm font-medium text-slate-600 hover:text-indigo-600">← Volver a Apps Gratuitas</a>
+        </div>
+    </header>
+    <main class="max-w-2xl mx-auto px-4 py-8 flex-grow w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Convertidor de Unidades</h1>
+            <p class="text-slate-500 text-sm">Convierte longitud, peso, temperatura, área y volumen.</p>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+            <button onclick="setCategory('length')" id="cat-length" class="cat-btn px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white cursor-pointer">Longitud</button>
+            <button onclick="setCategory('weight')" id="cat-weight" class="cat-btn px-4 py-2 rounded-xl text-sm font-semibold border border-slate-300 hover:border-indigo-500 cursor-pointer">Peso</button>
+            <button onclick="setCategory('temp')" id="cat-temp" class="cat-btn px-4 py-2 rounded-xl text-sm font-semibold border border-slate-300 hover:border-indigo-500 cursor-pointer">Temperatura</button>
+            <button onclick="setCategory('area')" id="cat-area" class="cat-btn px-4 py-2 rounded-xl text-sm font-semibold border border-slate-300 hover:border-indigo-500 cursor-pointer">Área</button>
+            <button onclick="setCategory('volume')" id="cat-volume" class="cat-btn px-4 py-2 rounded-xl text-sm font-semibold border border-slate-300 hover:border-indigo-500 cursor-pointer">Volumen</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="flex items-end gap-3 mb-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Cantidad</label>
+                    <input type="number" id="inputValue" value="1" step="any" oninput="convert()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-lg font-semibold focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="w-40">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">De</label>
+                    <select id="fromUnit" onchange="convert()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:border-indigo-500"></select>
+                </div>
+            </div>
+            <div class="flex justify-center mb-4">
+                <button onclick="swap()" class="bg-slate-100 hover:bg-slate-200 p-3 rounded-full cursor-pointer" title="Intercambiar">⇅</button>
+            </div>
+            <div class="flex items-end gap-3 mb-6">
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Resultado</label>
+                    <input type="text" id="result" readonly class="w-full px-3 py-2 border border-slate-300 rounded-xl text-lg font-bold text-indigo-600 bg-slate-50 focus:outline-none">
+                </div>
+                <div class="w-40">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">A</label>
+                    <select id="toUnit" onchange="convert()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:border-indigo-500"></select>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-white border-t border-slate-200 mt-12">
+        <div class="max-w-5xl mx-auto px-4 py-6 text-center text-xs text-slate-400">&copy; 2026 ConfiguroWeb.</div>
+    </footer>
+    <script>
+        const units = {
+            length: { name: 'Longitud', base: 'm', items: { 'mm':0.001, 'cm':0.01, 'm':1, 'km':1000, 'in':0.0254, 'ft':0.3048, 'yd':0.9144, 'mi':1609.34 } },
+            weight: { name: 'Peso', base: 'kg', items: { 'mg':0.000001, 'g':0.001, 'kg':1, 't':1000, 'oz':0.0283495, 'lb':0.453592 } },
+            area: { name: 'Área', base: 'm²', items: { 'cm²':0.0001, 'm²':1, 'km²':1000000, 'ha':10000, 'ft²':0.092903, 'ac':4046.86 } },
+            volume: { name: 'Volumen', base: 'L', items: { 'ml':0.001, 'L':1, 'm³':1000, 'gal(US)':3.78541, 'ft³':28.3168 } },
+            temp: { name: 'Temperatura', base: 'C', items: { 'C':'C', 'F':'F', 'K':'K' } }
+        };
+        let category = 'length';
+
+        function setCategory(cat) {
+            category = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.className = 'cat-btn px-4 py-2 rounded-xl text-sm font-semibold border border-slate-300 hover:border-indigo-500 cursor-pointer');
+            document.getElementById('cat-' + cat).className = 'cat-btn px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white cursor-pointer';
+            populateUnits();
+            convert();
+        }
+
+        function populateUnits() {
+            const keys = Object.keys(units[category].items);
+            const from = document.getElementById('fromUnit');
+            const to = document.getElementById('toUnit');
+            from.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
+            to.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
+            to.selectedIndex = keys.length > 1 ? 1 : 0;
+        }
+
+        function convert() {
+            const val = parseFloat(document.getElementById('inputValue').value) || 0;
+            const from = document.getElementById('fromUnit').value;
+            const to = document.getElementById('toUnit').value;
+            let result;
+
+            if (category === 'temp') {
+                let c;
+                if (from === 'C') c = val;
+                else if (from === 'F') c = (val - 32) * 5/9;
+                else c = val - 273.15;
+                if (to === 'C') result = c;
+                else if (to === 'F') result = c * 9/5 + 32;
+                else result = c + 273.15;
+            } else {
+                const inBase = val * units[category].items[from];
+                result = inBase / units[category].items[to];
+            }
+            document.getElementById('result').value = parseFloat(result.toFixed(6)).toString();
+        }
+
+        function swap() {
+            const f = document.getElementById('fromUnit');
+            const t = document.getElementById('toUnit');
+            [f.value, t.value] = [t.value, f.value];
+            convert();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { setCategory('length'); });
+    </script>
+</body>
+</html>
